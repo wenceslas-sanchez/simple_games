@@ -15,7 +15,8 @@ contract NoughtsCrosses is Game {
     mapping(bytes32 => NCGameInstance) games;
 
     event NewGameInstance(address _playerOne, address _playerTwo);
-    event NewGameMove(bytes32 _key, uint8 _playerNumber);
+    event GameMove(bytes32 _key, uint8 _playerNumber);
+    event GameWinner(bytes _key, uint8 _playerNumber);
 
     modifier turnNumber(uint8 _player) {
         bool r = false;
@@ -32,35 +33,39 @@ contract NoughtsCrosses is Game {
         _;
     }
 
-    function hashBothAddresses(address _one, address _two)
-        internal
+    modifier isGameExists(bytes32 _key) {
+        require(_isGameExists(_key), "The game doesn't exist yet.");
+        _;
+    }
+
+    modifier cellAlreadyPlayed(bytes32 _key, uint8[2] memory _coord) {
+        NCGameInstance storage _game = games[_key];
+        require(_game.frame[_coord[0]][_coord[1]] != 0, "Cell already played.");
+        _;
+    }
+
+    function _hashBothAddresses(address _one, address _two)
+        private
         pure
         returns (bytes32)
     {
         return keccak256(abi.encodePacked(_one, _two));
     }
 
-    function _isAlreadyPlayingCheck(address _playerOne, address _playerTwo)
-        public
-        view
-        virtual
-    {
-        //bytes32 hashedAddress= hashBothAddresses(_playerOne, _playerTwo);
-        NCGameInstance memory NULL = games[
-            hashBothAddresses(_playerOne, _playerTwo)
-        ];
+    function _isGameExistsError(bytes32 _key) private view {
+        NCGameInstance memory NULL = games[_key];
     }
 
-    function _isAlreadyPlaying() internal returns (bool _r) {
-        (_r, ) = address(msg.sender).call(
-            abi.encodePacked(this._isAlreadyPlayingCheck.selector)
+    function _isGameExists(bytes32 _key) private returns (bool _r) {
+        (_r, ) = address(this).call(
+            abi.encodeWithSignature("_isGameExistsError(bytes32)", _key)
         );
         return _r;
     }
 
     function instanceGame(address _playerTwo) public returns (bytes32) {
         uint8[frameSize][frameSize] memory frame;
-        bytes32 hashedAddress = hashBothAddresses(msg.sender, _playerTwo);
+        bytes32 hashedAddress = _hashBothAddresses(msg.sender, _playerTwo);
         games[hashedAddress] = NCGameInstance(
             GameInstance(msg.sender, _playerTwo, 0),
             frame,
@@ -72,24 +77,30 @@ contract NoughtsCrosses is Game {
     }
 
     // Given (x, y), set value to frame
-    function action(
+    function play(
         uint8[2] memory _coord,
-        uint8 _player,
+        uint8 _turn,
         address _adversary
-    ) public turnNumber(_player) {
+    ) public turnNumber(_turn) {
         bytes32 key;
-        NCGameInstance storage _game;
-        bool iswinner;
-        bool isPlayerOne = _player == 0;
+        bool isPlayerOne = _turn == 0;
         if (isPlayerOne) {
-            key = hashBothAddresses(msg.sender, _adversary);
+            key = _hashBothAddresses(msg.sender, _adversary);
         } else {
-            key = hashBothAddresses(_adversary, msg.sender);
+            key = _hashBothAddresses(_adversary, msg.sender);
         }
-        _game = games[key];
-        require(_game.game.turn == _player, "It's not your turn. Please wait.");
+        _actionFrame(key, _coord, _turn, isPlayerOne);
+    }
 
-        if (isPlayerOne) {
+    function _actionFrame(
+        bytes32 _key,
+        uint8[2] memory _coord,
+        uint8 _turn,
+        bool _isPlayerOne
+    ) private isGameExists(_key) cellAlreadyPlayed(_key, _coord) {
+        NCGameInstance storage _game = games[_key];
+        require(_game.game.turn == _turn, "It's not your turn. Please wait.");
+        if (_isPlayerOne) {
             require(
                 _game.game.playerOne == msg.sender,
                 "You are not the player one."
@@ -101,29 +112,25 @@ contract NoughtsCrosses is Game {
             );
         }
 
-        _game.frame[_coord[0]][_coord[1]] = playerNumber[_player];
+        _game.frame[_coord[0]][_coord[1]] = playerNumber[_turn];
         _game.numMove++;
-        if (isPlayerOne) {
+        if (_isPlayerOne) {
             _game.game.turn = 1;
         } else {
             _game.game.turn = 0;
         }
-        emit NewGameMove(key, _player);
-
-        //if (_game.numMove++ >= 5) {
-        //    iswinner= checkWinner(_game.frame, _player);
-        //}
+        emit GameMove(_key, _turn);
     }
 
-    function _abs8(int8 x) internal pure returns (uint8 y) {
+    function _abs8(int8 x) private pure returns (uint8 y) {
         y = (x < 0 ? uint8(-x) : uint8(x));
         return y;
     }
 
-    function checkWinner(
-        uint8[frameSize][frameSize] memory _frame,
-        uint256 _player
-    ) public view returns (bool) {
+    function _checkWinner(
+        uint8[frameSize][frameSize] calldata _frame,
+        uint8 _player
+    ) private view returns (bool) {
         uint8 h;
         uint8 v;
         uint8 rd_i;
