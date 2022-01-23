@@ -164,18 +164,26 @@ contract NoughtsCrosses is Game {
         return false;
     }
 
-    function showFrame(address _playerOne, address _playerTwo)
+    function showGame(address _playerOne, address _playerTwo)
         public
         view
         returns (
+            address,
+            address,
             uint8[frameSize][frameSize] memory,
             uint8,
             uint8
         )
     {
-        bytes32 key = hashBothAddresses(_playerOne, _playerTwo);
+        bytes32 key = _hashBothAddresses(_playerOne, _playerTwo);
         NCGameInstance memory _game = games[key];
 
-        return (_game.frame, _game.numMove, _game.game.turn);
+        return (
+            _game.game.playerOne,
+            _game.game.playerTwo,
+            _game.frame,
+            _game.numMove,
+            _game.game.turn
+        );
     }
 }
