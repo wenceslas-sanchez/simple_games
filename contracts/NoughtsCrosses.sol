@@ -10,30 +10,45 @@ contract NoughtsCrosses is Game {
     struct NCGameInstance {
         GameInstance game;
         uint8[frameSize][frameSize] frame;
+        uint8 numMove;
     }
-    mapping(address => NCGameInstance) games;
+    mapping(bytes32 => NCGameInstance) games;
 
-    modifier isAlreadyPlaying() {
-        bool _r = _isAlreadyPlaying();
+    event NewGameInstance(address _playerOne, address _playerTwo);
+    event NewGameMove(bytes32 _key, uint8 _playerNumber);
+
+    modifier turnNumber(uint8 _player) {
+        bool r = false;
+        for (uint8 i = 0; i < 2; i++) {
+            if (i == _player) {
+                r = true;
+                break;
+            }
+        }
         require(
-            !_r,
-            "You already have a game instance. Please finish it or kill it."
+            r,
+            "The turn number you provided doesn't exist. Possible values between [1, 4]."
         );
         _;
     }
 
-    modifier isNotAlreadyPlaying() {
-        bool _r = _isAlreadyPlaying();
-        require(
-            _r,
-            "You are not playing to this game. Please Start game instance."
-        );
-        _;
+    function hashBothAddresses(address _one, address _two)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_one, _two));
     }
 
-    function _isAlreadyPlayingCheck() public view virtual {
-        NCGameInstance memory NULL;
-        NULL = games[msg.sender];
+    function _isAlreadyPlayingCheck(address _playerOne, address _playerTwo)
+        public
+        view
+        virtual
+    {
+        //bytes32 hashedAddress= hashBothAddresses(_playerOne, _playerTwo);
+        NCGameInstance memory NULL = games[
+            hashBothAddresses(_playerOne, _playerTwo)
+        ];
     }
 
     function _isAlreadyPlaying() internal returns (bool _r) {
@@ -43,27 +58,61 @@ contract NoughtsCrosses is Game {
         return _r;
     }
 
-    function killGameInstance() public virtual isNotAlreadyPlaying {
-        delete games[msg.sender];
-    }
-
-    function instanceGame(address _playerTwo) public isAlreadyPlaying {
+    function instanceGame(address _playerTwo) public returns (bytes32) {
         uint8[frameSize][frameSize] memory frame;
-        games[msg.sender] = NCGameInstance(
+        bytes32 hashedAddress = hashBothAddresses(msg.sender, _playerTwo);
+        games[hashedAddress] = NCGameInstance(
             GameInstance(msg.sender, _playerTwo, 0),
-            frame
+            frame,
+            0
         );
+        emit NewGameInstance(msg.sender, _playerTwo);
+
+        return hashedAddress;
     }
 
     // Given (x, y), set value to frame
     function action(
         uint8[2] memory _coord,
-        uint8[frameSize][frameSize] memory _frame,
-        uint256 _player
-    ) public returns (uint8[frameSize][frameSize] memory) {
-        _frame[_coord[0]][_coord[1]] = playerNumber[_player];
+        uint8 _player,
+        address _adversary
+    ) public turnNumber(_player) {
+        bytes32 key;
+        NCGameInstance storage _game;
+        bool iswinner;
+        bool isPlayerOne = _player == 0;
+        if (isPlayerOne) {
+            key = hashBothAddresses(msg.sender, _adversary);
+        } else {
+            key = hashBothAddresses(_adversary, msg.sender);
+        }
+        _game = games[key];
+        require(_game.game.turn == _player, "It's not your turn. Please wait.");
 
-        return _frame;
+        if (isPlayerOne) {
+            require(
+                _game.game.playerOne == msg.sender,
+                "You are not the player one."
+            );
+        } else {
+            require(
+                _game.game.playerTwo == msg.sender,
+                "You are not the player two."
+            );
+        }
+
+        _game.frame[_coord[0]][_coord[1]] = playerNumber[_player];
+        _game.numMove++;
+        if (isPlayerOne) {
+            _game.game.turn = 1;
+        } else {
+            _game.game.turn = 0;
+        }
+        emit NewGameMove(key, _player);
+
+        //if (_game.numMove++ >= 5) {
+        //    iswinner= checkWinner(_game.frame, _player);
+        //}
     }
 
     function _abs8(int8 x) internal pure returns (uint8 y) {
@@ -106,5 +155,20 @@ contract NoughtsCrosses is Game {
         }
 
         return false;
+    }
+
+    function showFrame(address _playerOne, address _playerTwo)
+        public
+        view
+        returns (
+            uint8[frameSize][frameSize] memory,
+            uint8,
+            uint8
+        )
+    {
+        bytes32 key = hashBothAddresses(_playerOne, _playerTwo);
+        NCGameInstance memory _game = games[key];
+
+        return (_game.frame, _game.numMove, _game.game.turn);
     }
 }
