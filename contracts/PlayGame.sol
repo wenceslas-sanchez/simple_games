@@ -51,9 +51,7 @@ contract PlayGame {
         _;
     }
 
-    function startGame(string _name) external isGameExist(_name) {
-
-    }
+    function startGame(string _name) external isGameExist(_name) {}
 
     function acceptInvitation(string _name, address _player1)
         external
