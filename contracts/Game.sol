@@ -2,8 +2,8 @@ pragma solidity ^0.8.11;
 
 abstract contract Game {
     struct GameInstance {
-        address playerOne;
-        address playerTwo;
+        address player1;
+        address player2;
         uint8 turn;
     }
 }
