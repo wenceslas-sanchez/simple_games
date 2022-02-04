@@ -12,13 +12,18 @@ contract TicTacToe is Game, Utils {
         uint8[frameSize][frameSize] frame;
         uint8 numMove;
     }
+    TTTGameInstance game;
 
     constructor(address _player1, address _player2) {
-        TTTGameInstance game = NCGameInstance(
+        game = TTTGameInstance(
             GameInstance(_player1, _player2, 0),
             uint8[frameSize][frameSize],
             0
         );
+    }
+
+    fallback() external {
+        bytes data= msg.data;
     }
 
     modifier cellAlreadyPlayed(uint8[2] memory _coord) {
