@@ -23,7 +23,7 @@ contract TicTacToe is Game, Utils {
     }
 
     fallback() external {
-        bytes data= msg.data;
+        bytes data = msg.data;
     }
 
     modifier cellAlreadyPlayed(uint8[2] memory _coord) {
