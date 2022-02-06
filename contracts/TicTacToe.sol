@@ -39,6 +39,25 @@ contract TicTacToe is Game, Utils {
         _;
     }
 
+    modifier gameIsOver() {
+        require(game.gameInstance.isGameFinished, "This game is over");
+        _;
+    }
+
+    function play(uint8[2] memory _coord) public gameIsOver() {
+        bool _isWinner= _actionFrame(_coord);
+        emit PlayTurn(msg.sender);
+
+        if ((game.numMove > 8) && !_isWinner) {
+            game.gameInstance.isGameFinished= true;
+            emit ExAequo(address(this), game.gameInstance.player1, game.gameInstance.player2);
+        } else if (_isWinner) {
+            game.gameInstance.isGameFinished= true;
+            game.gameInstance.winner= msg.sender;
+            emit GameIsWon(address(this), msg.sender);
+        }
+    }
+
     function _isTurn(uint8 _n) internal returns (bool) {
         return game.gameInstance.turn == _n;
     }
