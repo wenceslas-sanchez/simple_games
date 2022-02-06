@@ -1,47 +1,15 @@
 pragma solidity ^0.8.0;
 
-import {TicTacToe} from "./TicTacToe.sol";
+import {GameFactory} from "./GameFactory.sol";
+import {Utils} from "./Utils.sol";
 
-contract GameFactory {
-    string[] possibleGames = ["tictactoe"];
-
-    function isGameExist(string calldata _name) external returns (bool) {
-        bool result = false;
-        for (uint8 i = 0; i < possibleGames.length; i++) {
-            if (
-                keccak256(abi.encodePacked(_name)) ==
-                keccak256(abi.encodePacked(possibleGames[i]))
-            ) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
-    function buildGame(string calldata _name, address _player2)
-        external
-        returns (address)
-    {
-        // TODO default, to do in assembly
-        if (
-            keccak256(abi.encodePacked(_name)) ==
-            keccak256(abi.encodePacked("tictactoe"))
-        ) {
-            return address(new TicTacToe(msg.sender, _player2));
-        } else {
-            return address(0);
-        }
-    }
-}
-
-contract PlayGame {
+contract PlayGame is Utils {
     GameFactory gameFactory;
     mapping(string => mapping(address => address)) public pendingInvitations;
-    mapping(bytes => address) public pendingGames;
+    mapping(string => mapping(bytes32 => address)) public GameInstantiated;
 
     event SendInvitation(string _name, address _from, address _to);
-    event AcceptInvitation(string _name, address _from);
+    event AcceptInvitation(string _name, address _from, address _to);
 
     modifier isInvited(string calldata _name, address _from) {
         require(
@@ -61,18 +29,18 @@ contract PlayGame {
         external
         isGameExist(_name)
     {
-        pendingInvitation[_name][msg.sender] = _to;
+        pendingInvitations[_name][msg.sender] = _to;
         emit SendInvitation(_name, msg.sender, _to);
     }
-
-    function instanceGame(string calldata _name) external isGameExist(_name) {}
 
     function acceptInvitation(string calldata _name, address _from)
         external
         isGameExist(_name)
         isInvited(_name, _from)
     {
+        bytes32 hash= _hashBothAddresses(pendingInvitations[_name][_from], msg.sender);
+        GameInstantiated[_name][hash]= gameFactory.buildGame(_name, pendingInvitations[_name][_from]);
         delete pendingInvitations[_name][_from];
-        emit AcceptInvitation(_name, _from);
+        emit AcceptInvitation(_name, _from, msg.sender);
     }
 }
