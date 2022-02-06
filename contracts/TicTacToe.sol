@@ -34,7 +34,9 @@ contract TicTacToe is Game, Utils {
             _r = _isTurn(0);
         } else if (game.gameInstance.player2 == msg.sender) {
             _r = _isTurn(1);
-        } else {require(false, "You are not a player of this game.");}
+        } else {
+            require(false, "You are not a player of this game.");
+        }
         require(_r, "Its not your turn.");
         _;
     }
@@ -44,16 +46,20 @@ contract TicTacToe is Game, Utils {
         _;
     }
 
-    function play(uint8[2] memory _coord) public gameIsOver() {
-        bool _isWinner= _actionFrame(_coord);
+    function play(uint8[2] memory _coord) public gameIsOver {
+        bool _isWinner = _actionFrame(_coord);
         emit PlayTurn(msg.sender);
 
         if ((game.numMove > 8) && !_isWinner) {
-            game.gameInstance.isGameFinished= true;
-            emit ExAequo(address(this), game.gameInstance.player1, game.gameInstance.player2);
+            game.gameInstance.isGameFinished = true;
+            emit ExAequo(
+                address(this),
+                game.gameInstance.player1,
+                game.gameInstance.player2
+            );
         } else if (_isWinner) {
-            game.gameInstance.isGameFinished= true;
-            game.gameInstance.winner= msg.sender;
+            game.gameInstance.isGameFinished = true;
+            game.gameInstance.winner = msg.sender;
             emit GameIsWon(address(this), msg.sender);
         }
     }
@@ -63,13 +69,13 @@ contract TicTacToe is Game, Utils {
     }
 
     function _actionFrame(uint8[2] memory _coord)
-    internal
-    cellAlreadyPlayed(_coord)
-    isPlayerTurn
-    returns (bool)
+        internal
+        cellAlreadyPlayed(_coord)
+        isPlayerTurn
+        returns (bool)
     {
         bool _isWinner = false;
-        bool _isplayer1= game.gameInstance.turn == 0;
+        bool _isplayer1 = game.gameInstance.turn == 0;
 
         game.frame[_coord[0]][_coord[1]] = playerNumber[game.gameInstance.turn];
         game.gameInstance.turn = (_isplayer1 ? 1 : 0);

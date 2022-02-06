@@ -20,8 +20,8 @@ contract GameFactory {
     }
 
     function buildGame(string calldata _name, address _player1)
-    external
-    returns (address)
+        external
+        returns (address)
     {
         // TODO default, to do in assembly
         if (

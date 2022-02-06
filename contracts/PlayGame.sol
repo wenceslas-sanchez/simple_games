@@ -38,8 +38,14 @@ contract PlayGame is Utils {
         isGameExist(_name)
         isInvited(_name, _from)
     {
-        bytes32 hash= _hashBothAddresses(pendingInvitations[_name][_from], msg.sender);
-        GameInstantiated[_name][hash]= gameFactory.buildGame(_name, pendingInvitations[_name][_from]);
+        bytes32 hash = _hashBothAddresses(
+            pendingInvitations[_name][_from],
+            msg.sender
+        );
+        GameInstantiated[_name][hash] = gameFactory.buildGame(
+            _name,
+            pendingInvitations[_name][_from]
+        );
         delete pendingInvitations[_name][_from];
         emit AcceptInvitation(_name, _from, msg.sender);
     }

@@ -7,7 +7,6 @@ abstract contract Game {
         address winner;
         bool isGameFinished;
         uint8 turn;
-
     }
     event PlayTurn(address player);
     event GameIsWon(address game, address player);
