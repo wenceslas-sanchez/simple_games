@@ -12,8 +12,8 @@ contract LinkedListBytes32 {
 
     mapping(bytes32 => Object) objects;
 
-    event Appended(bytes32 head, bytes32 next, bytes32 key, bytes32 value);
-    event Removed(bytes32 key);
+    event Append(bytes32 head, bytes32 next, bytes32 key, bytes32 value);
+    event Remove(bytes32 key);
 
     function append(bytes32 _value, bytes32 _key) public {
         Object memory _obj= Object(head, _key, _value);
@@ -22,7 +22,7 @@ contract LinkedListBytes32 {
         head= id;
         __length++;
 
-        emit Appended(head, _obj.next, _obj.key, _obj.value);
+        emit Append(head, _obj.next, _obj.key, _obj.value);
     }
 
     function length() public view returns (uint) {
@@ -51,7 +51,7 @@ contract LinkedListBytes32 {
         if (_obj.key == _key) {
             delete objects[_head];
             length--;
-            emit Removed(_key);
+            emit Remove(_key);
 
             return (true, _next);
         }
