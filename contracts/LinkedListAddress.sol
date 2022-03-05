@@ -14,6 +14,8 @@ contract LinkedListBytes32 {
 
     event Append(bytes32 head, bytes32 next, bytes32 key, bytes32 value);
     event Remove(bytes32 key);
+    event Get(bytes32 _key);
+    event MissingElement(bytes32 _key);
 
     function append(bytes32 _value, bytes32 _key) public {
         Object memory _obj= Object(head, _key, _value);
@@ -34,14 +36,17 @@ contract LinkedListBytes32 {
         bytes32 _head= head;
         bool _r;
         for (uint i= 0; i<= length; i++) {
-            Object memory _obj= objects[_head];
-            (_r, _next)= _remove_obj(_obj, _key);
+            (_r, _next)= _remove_obj(_head, _key);
             if (_r) {
                 if (i == 0) {
                     head= _next;
                 }
                 break;
             }
+            _head= _next;
+        }
+        if (!_r) {
+            emit MissingElement(_key);
         }
     }
 
@@ -57,5 +62,34 @@ contract LinkedListBytes32 {
         }
 
         return (false, _next);
+    }
+
+    function get(bytes32 _key) public view returns (bytes32) {
+        bytes32 _head= head;
+        bytes32 _value;
+        bool _r;
+        for (uint i= 0; i<= length; i++) {
+            Object memory _obj= objects[_head];
+            if (_obj.key == _key) {
+                emit Get(_key);
+                _value= _obj.value;
+            }
+            _head= _obj.next;
+        }
+        if (_value == 0) {
+            emit MissingElement(_key);
+        }
+
+        return _value;
+    }
+
+    function _get_obj(bytes32 _head, bytes32 _next, bytes32 _value) private returns (bytes32) {
+        Object memory _obj= objects[_head];
+        bytes32 _next= obj.next;
+        if (_obj.key == _key) {
+            emit Get(_key);
+            return _obj.value;
+        }
+        return;
     }
 }
