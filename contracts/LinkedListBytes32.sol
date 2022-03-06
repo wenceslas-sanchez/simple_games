@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 
-import {ILinkedList} from "./ILinkedList.sol";
+import {AbstractLinkedList} from "./AbstractLinkedList.sol";
 
-contract LinkedListBytes32 is ILinkedList {
+contract LinkedListBytes32 is AbstractLinkedList {
 
     struct Object {
         bytes32 next;
