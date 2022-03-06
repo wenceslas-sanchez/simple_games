@@ -2,7 +2,6 @@ pragma solidity ^0.8.0;
 
 import {BaseTicTacToe} from "./BaseTicTacToe.sol";
 
-
 contract TicTacToe is BaseTicTacToe {
     TTTGameInstance game;
 
@@ -61,10 +60,10 @@ contract TicTacToe is BaseTicTacToe {
     }
 
     function _actionFrame(uint8[2] memory _coord)
-    internal
-    cellAlreadyPlayed(_coord)
-    isPlayerTurn
-    returns (bool)
+        internal
+        cellAlreadyPlayed(_coord)
+        isPlayerTurn
+        returns (bool)
     {
         bool _isWinner = false;
         bool _isplayer1 = game.gameInstance.turn == 0;
