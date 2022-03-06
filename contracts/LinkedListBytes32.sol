@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 import {AbstractLinkedList} from "./AbstractLinkedList.sol";
 
 contract LinkedListBytes32 is AbstractLinkedList {
-
     struct Object {
         bytes32 next;
         bytes32 key;
@@ -40,7 +39,7 @@ contract LinkedListBytes32 is AbstractLinkedList {
         emit Append(head, _obj.next, _obj.key, _obj.value);
     }
 
-    function remove(bytes32 _key) override public {
+    function remove(bytes32 _key) public override {
         bytes32 _head = head;
         bytes32 _next;
         bool _r;
@@ -60,8 +59,8 @@ contract LinkedListBytes32 is AbstractLinkedList {
     }
 
     function _remove_obj(bytes32 _head, bytes32 _key)
-    private
-    returns (bool, bytes32)
+        private
+        returns (bool, bytes32)
     {
         Object memory _obj = objects[_head];
         bytes32 _next = _obj.next;
