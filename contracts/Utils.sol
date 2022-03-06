@@ -13,4 +13,12 @@ contract Utils {
     {
         return keccak256(abi.encodePacked(_one, _two));
     }
+
+    function addressToBytes32(address _a) public pure returns (bytes32) {
+        return bytes32(uint256(uint160(address(_a))));
+    }
+
+    function bytes32ToAddress(bytes32 _b) public pure returns (bytes32) {
+        return address(uint160(uint256(bytes32(_b))));
+    }
 }
