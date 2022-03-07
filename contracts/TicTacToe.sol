@@ -14,8 +14,11 @@ contract TicTacToe is BaseTicTacToe {
         );
     }
 
-    fallback() {
-        require(false, "You need to call the function play(uint[2] memory _coord)");
+    fallback() external {
+        require(
+            false,
+            "You need to call the function play(uint[2] memory _coord)"
+        );
     }
 
     modifier cellAlreadyPlayed(uint8[2] memory _coord) {

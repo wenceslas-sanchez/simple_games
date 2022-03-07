@@ -68,12 +68,12 @@ contract PlayGame is Utils {
             calldatacopy(ptr, 0, calldatasize())
 
             let result := delegatecall(
-            gas(),
-            _gameAddress,
-            ptr,
-            calldatasize(),
-            0,
-            0
+                gas(),
+                _gameAddress,
+                ptr,
+                calldatasize(),
+                0,
+                0
             )
 
             let size := returndatasize()
