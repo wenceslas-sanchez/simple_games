@@ -14,6 +14,10 @@ contract TicTacToe is BaseTicTacToe {
         );
     }
 
+    fallback() {
+        require(false, "You need to call the function play(uint[2] memory _coord)");
+    }
+
     modifier cellAlreadyPlayed(uint8[2] memory _coord) {
         require(game.frame[_coord[0]][_coord[1]] == 0, "Cell already played.");
         _;
