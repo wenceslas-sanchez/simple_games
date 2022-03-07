@@ -60,13 +60,32 @@ contract PlayGame is Utils {
             bytes32ToAddress(pendingInvitations.get(addressToBytes32(_from)));
     }
 
-    function getGameInstantiated(address _from, address _to)
-        public
-        returns (address)
-    {
-        return
-            bytes32ToAddress(
-                gameInstantiated.get(_hashBothAddresses(_from, _to))
-            );
+    // TODO use proxy to generalize game contract call
+    // https://medium.com/coinmonks/upgradeable-proxy-contract-from-scratch-3e5f7ad0b741
+    function play(address _gameAddress) external {
+        assembly {
+            let ptr := mload(0x40)
+            calldatacopy(ptr, 0, calldatasize())
+
+            let result := delegatecall(
+            gas(),
+            _gameAddress,
+            ptr,
+            calldatasize(),
+            0,
+            0
+            )
+
+            let size := returndatasize()
+            returndatacopy(ptr, 0, size)
+
+            switch result
+            case 0 {
+                revert(ptr, size)
+            }
+            default {
+                return(ptr, size)
+            }
+        }
     }
 }
