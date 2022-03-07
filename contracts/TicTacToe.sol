@@ -32,12 +32,12 @@ contract TicTacToe is BaseTicTacToe {
         _;
     }
 
-    modifier gameIsOver() {
+    modifier gameIsNotOver() {
         require(game.gameInstance.isGameFinished, "This game is over");
         _;
     }
 
-    function play(uint8[2] memory _coord) public gameIsOver {
+    function play(uint8[2] memory _coord) public gameIsNotOver {
         bool _isWinner = _actionFrame(_coord);
         emit PlayTurn(msg.sender);
 
