@@ -13,8 +13,6 @@ contract BaseTicTacToe is Game, Utils {
         uint8 numMove;
     }
 
-    TTTGameInstance game;
-
     function _checkWinner(
         uint8[frameSize][frameSize] memory _frame,
         uint8 _player
