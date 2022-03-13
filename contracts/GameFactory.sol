@@ -5,6 +5,8 @@ import {TicTacToe} from "./TicTacToe.sol";
 contract GameFactory {
     string[] possibleGames = ["tictactoe"];
 
+    TicTacToe tictactoe= new TicTacToe();
+
     function isGameExist(string calldata _name) external returns (bool) {
         bool result = false;
         for (uint8 i = 0; i < possibleGames.length; i++) {
@@ -19,18 +21,15 @@ contract GameFactory {
         return result;
     }
 
-    function buildGame(string calldata _name, address _player1)
+    function buildGame(string calldata _name, address _from, address _to)
         external
-        returns (address)
     {
         // TODO default, to do in assembly
         if (
             keccak256(abi.encodePacked(_name)) ==
             keccak256(abi.encodePacked("tictactoe"))
         ) {
-            return address(new TicTacToe(_player1, msg.sender));
-        } else {
-            return address(0);
+            tictactoe.startGame(_from, _to);
         }
     }
 }

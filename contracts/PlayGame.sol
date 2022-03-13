@@ -7,14 +7,12 @@ import {LinkedListBytes32} from "./LinkedListBytes32.sol";
 contract PlayGame is Utils {
     GameFactory gameFactory = new GameFactory();
     LinkedListBytes32 pendingInvitations = new LinkedListBytes32();
-    LinkedListBytes32 gameInstantiated = new LinkedListBytes32();
 
     event SendInvitation(string _name, address _from, address _to);
     event AcceptInvitation(
         string _name,
         address _from,
-        address _to,
-        address _game
+        address _to
     );
 
     modifier isInvited(address _from) {
@@ -44,48 +42,14 @@ contract PlayGame is Utils {
         external
         isGameExist(_name)
         isInvited(_from)
-        returns (address _game)
     {
         pendingInvitations.remove(addressToBytes32(_from));
-        _game = gameFactory.buildGame(_name, _from);
-        gameInstantiated.append(
-            _hashBothAddresses(_from, msg.sender),
-            addressToBytes32(_game)
-        );
-        emit AcceptInvitation(_name, _from, msg.sender, _game);
+        gameFactory.buildGame(_name, _from, msg.sender);
+        emit AcceptInvitation(_name, _from, msg.sender);
     }
 
     function getPendingInvitation(address _from) public returns (address) {
         return
             bytes32ToAddress(pendingInvitations.get(addressToBytes32(_from)));
-    }
-
-    // TODO use proxy to generalize game contract call
-    // https://medium.com/coinmonks/upgradeable-proxy-contract-from-scratch-3e5f7ad0b741
-    function play(address _gameAddress) external {
-        assembly {
-            let ptr := mload(0x40)
-            calldatacopy(ptr, 0, calldatasize())
-
-            let result := delegatecall(
-            gas(),
-            _gameAddress,
-            ptr,
-            calldatasize(),
-            0,
-            0
-            )
-
-            let size := returndatasize()
-            returndatacopy(ptr, 0, size)
-
-            switch result
-            case 0 {
-                revert(ptr, size)
-            }
-            default {
-                return(ptr, size)
-            }
-        }
     }
 }

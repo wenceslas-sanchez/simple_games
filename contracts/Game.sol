@@ -9,8 +9,8 @@ abstract contract Game {
         uint8 turn;
     }
     event PlayTurn(address player);
-    event GameIsWon(address game, address player);
-    event ExAequo(address game, address player1, address player2);
+    event GameIsWon(address winner);
+    event ExAequo(address player1, address player2);
 
     function play() public {}
 }

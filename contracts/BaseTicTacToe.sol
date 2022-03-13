@@ -48,4 +48,23 @@ contract BaseTicTacToe is Game, Utils {
         }
         return false;
     }
+
+    function _actionFrame(TTGameInstance memory _game, uint8[2] memory _coord)
+    internal
+    cellAlreadyPlayed(_player1, _coord)
+    isPlayerTurn(_player1)
+    returns (bool)
+    {
+        bool _isWinner = false;
+        bool _isplayer1 = _game.gameInstance.turn == 0;
+
+        _game.frame[_coord[0]][_coord[1]] = playerNumber[_game.gameInstance.turn];
+        _game.gameInstance.turn = (_isplayer1 ? 1 : 0);
+
+        if (_game.numMove > 4) {
+            _isWinner = _checkWinner(_game.frame, _game.gameInstance.turn);
+        }
+
+        return _isWinner;
+    }
 }
