@@ -9,11 +9,7 @@ contract PlayGame is Utils {
     LinkedListBytes32 pendingInvitations = new LinkedListBytes32();
 
     event SendInvitation(string _name, address _from, address _to);
-    event AcceptInvitation(
-        string _name,
-        address _from,
-        address _to
-    );
+    event AcceptInvitation(string _name, address _from, address _to);
 
     modifier isInvited(address _from) {
         bytes32 _to = pendingInvitations.get(addressToBytes32(_from));
